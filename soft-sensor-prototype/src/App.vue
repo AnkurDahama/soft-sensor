@@ -1,17 +1,23 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <HelloWorld msg="Welcome to Soft-Sensor Prototype"/>
+    <div id="main-grid">
+      <div class="main-grid-cols"> <h3>Platform Connection</h3> <connection/> </div>
+      <div class="main-grid-cols"> <h3>Subscribed Topics</h3> </div>
+      <div class="main-grid-cols"> <h3>Send Messages</h3> </div>
+    </div>
   </div>
 </template>
 
 <script>
 import HelloWorld from './components/HelloWorld.vue'
+import Connection from './components/Connection.vue'
 
 export default {
   name: 'app',
   components: {
-    HelloWorld
+    HelloWorld,
+    Connection
   }
 }
 </script>
@@ -24,5 +30,19 @@ export default {
   text-align: center;
   color: #2c3e50;
   margin-top: 60px;
+}
+
+#main-grid {
+  display: grid;
+  grid-template-columns: 33% 33% 33%;
+}
+
+.main-grid-cols {
+  border: solid black 2px;
+}
+
+.root-div {
+  text-align: left;
+  margin-left: 40px;
 }
 </style>
