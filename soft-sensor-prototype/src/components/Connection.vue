@@ -26,10 +26,9 @@ export default {
     },
     methods: {
         ConnectToMqtt: function() {
-            console.log("connection attempt");
             this.$CreateClient(this.host, this.port, this.clientId);
-		    this.$client.onMessageArrived = this.onMessageArrived;
-		    this.$client.onConnectionLost = this.onConnectionLost;
+		    this.$client.obj.onMessageArrived = this.onMessageArrived;
+		    this.$client.obj.onConnectionLost = this.onConnectionLost;
 
             var options = {
                 useSSL: true,
@@ -40,10 +39,11 @@ export default {
             }
 
 
-            this.$client.connect(options);
+            this.$client.obj.connect(options);
         },
         onConnect: function() {
-            this.$client.subscribe("testtopic/1", {qos: 2});
+            //this.$client.obj.subscribe(this.$SubTopics.list[0], {qos: 2});
+            console.log("Connected");
         },
         onMessageArrived: function(message) {
             console.log("onMessageArrived:"+message.payloadString);

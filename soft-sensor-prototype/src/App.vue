@@ -3,8 +3,8 @@
     <HelloWorld msg="Welcome to Soft-Sensor Prototype"/>
     <div id="main-grid">
       <div class="main-grid-cols"> <h3>Platform Connection</h3> <connection/> </div>
-      <div class="main-grid-cols"> <h3>Subscribed Topics</h3> </div>
-      <div class="main-grid-cols"> <h3>Send Messages</h3> </div>
+      <div class="main-grid-cols"> <h3>Subscribed Topics</h3> <topics /> </div>
+      <div class="main-grid-cols"> <h3>Send Messages</h3> <post-message/> </div>
     </div>
   </div>
 </template>
@@ -12,12 +12,15 @@
 <script>
 import HelloWorld from './components/HelloWorld.vue'
 import Connection from './components/Connection.vue'
-
+import PostMessage from './components/PostMessage.vue'
+import Topics from './components/Topics.vue'
 export default {
   name: 'app',
   components: {
     HelloWorld,
-    Connection
+    Connection,
+    PostMessage,
+    Topics
   }
 }
 </script>

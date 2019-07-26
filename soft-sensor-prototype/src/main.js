@@ -3,10 +3,12 @@ import App from './App.vue'
 import Paho from 'paho-mqtt'
 
 Vue.use(Paho);
-Vue.prototype.$client = "s";
+Vue.prototype.$client = {obj: "a"};
 Vue.prototype.$CreateClient = function(ser, port, clientId) {
-  this.$client = new Paho.Client(ser, port, clientId);
+  this.$client.obj = new Paho.Client(ser, port, clientId);
 };
+
+Vue.prototype.$SubTopics = {list: []};
 
 Vue.config.productionTip = false
 new Vue({
