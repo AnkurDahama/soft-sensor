@@ -1,14 +1,20 @@
 <template>
     <div class="root-div">
-        Host: <input type="text" name="mqtt_host" v-model="host" /> <br/>
-        Port: <input type="number" name="mqtt_port" v-model="port" /> <br/>
-        ClientID: <input type="text" name="mqtt_clientid" v-model="clientId" /> <br/>
-        <br/><br/>
-        Username: <input type="text" name="mqtt_username" v-model="username" /> <br/>
-        Password: <input type="text" name="mqtt_password" v-model="password" /> <br/><br/>
+        <h2 class="root-heading"> Connect to the Platform </h2>
+        <div class="input-form">
+            <div class="form-label">Host:</div> <div><input class="form-field" type="text" name="mqtt_host" v-model="host" /></div>
+            <div class="form-label">Port:</div> <div><input class="form-field" type="number" name="mqtt_port" v-model="port" /></div>
+            <div class="form-label">ClientID:</div> <div><input class="form-field" type="text" name="mqtt_clientid" v-model="clientId" /></div>
+            <div class="form-label">Username:</div> <div><input class="form-field" type="text" name="mqtt_username" v-model="username" /></div> 
+            <div class="form-label">Password:</div> <div><input class="form-field" type="text" name="mqtt_password" v-model="password" /></div> 
 
-        <input type="submit" name="mqtt_submit" v-on:click="ConnectToMqtt" /> 
-        <b v-if="isConnected"> Connected </b>
+            <div class="form-submit" v-on:click="ConnectToMqtt">Connect</div>
+            <!-- <input class="form-submit" type="submit" name="mqtt_submit" v-on:click="ConnectToMqtt" />  -->
+            <!-- <div><b v-if="isConnected"> Connected </b></div> -->
+        </div>
+        
+
+        
     </div>
 </template>
 
@@ -43,13 +49,16 @@ export default {
         },
         onConnect: function() {
             console.log("Connected");
+
             this.$root.$emit('connected');
+            
             this.isConnected = true;
         },
         onConnectionLost: function(responseObject) {
             if (responseObject.errorCode !== 0) {
             console.log("onConnectionLost:"+responseObject.errorMessage);
             this.isConnected = false;
+            this.$root.$emit('disconnected');
   		    }
         }
 
