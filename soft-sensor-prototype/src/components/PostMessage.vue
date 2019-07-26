@@ -23,6 +23,7 @@ export default {
             var message = new Paho.Message(this.message);
             message.destinationName = this.topic;
             this.$client.obj.send(message);
+            this.message = "";
         }
     }
 }
