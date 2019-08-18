@@ -15,11 +15,26 @@ export default new Vuex.Store({
         PUSH_NEW_SENSOR: (state, sensor) => {
             state.AllSensors.push(sensor);
         },
-        CHANGE_SENSOR_INFO: (state) => {
-            state.AllSensors[0].sensor_name = "changed";
+        CHANGE_SENSOR_INFO: (state,payload) => {
+            for(var i=0; i<state.AllSensors.length; i++) {
+                if(state.AllSensors[i].sensor_id == payload.id) {
+                    state.AllSensors[i] = payload.new;
+                    //console.log(payload.new);
+                }
+              }
+            
         },
-        DELETE_SENSOR: (state) => {
-            state.AllSensors.shift();
+        SPECIAL_DELETE: (state, index) => {
+            state.AllSensors.splice(index, 1);
+        },
+        DELETE_SENSOR: (state, id) => {
+
+          //  state.AllSensors.shift();
+            for(var i=0; i<state.AllSensors.length; i++) {
+                if(state.AllSensors[i].sensor_id == id) {
+                  state.AllSensors.splice(i, 1);
+                }
+              }
         }
     },
     plugins: [

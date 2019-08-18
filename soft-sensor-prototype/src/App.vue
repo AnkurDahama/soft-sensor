@@ -116,14 +116,45 @@ a:visited {
   text-align: center;
 }
 
-.popup {
+
+/* .popup {
   border: solid black 2px;
   box-shadow: 5px 10px;
-  /* width: fit-content; */
   width: 500px;
   padding: 60px 60px 60px 60px;
   margin: 0 auto;
   margin-top: 50px;
+} */
+
+.popupbg {
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  top: 0px;
+  left: 0px;
+  z-index: 900;
+  background-color: rgba(255, 255, 255, 0.5);
+}
+.popup {
+  z-index: 999;
+  background-color: #fff;
+  width: 50%;
+  position: fixed;
+  top: 20%;
+  left: 25%;
+  border: solid black 2px;
+  box-shadow: 5px 10px;
+  width: 500px;
+  padding: 60px 60px 60px 60px;
+  
+  /* margin-top: 50px; */
+}
+
+.popupClose {
+  position: absolute;
+  right: 15px;
+  top: 10px;
+  font-weight: bold;
 }
 
 .input-form {
