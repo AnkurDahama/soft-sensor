@@ -12,6 +12,7 @@
 
 <script>
 import Paho from "paho-mqtt"
+
 export default {
     name: 'Topics',
     data() {

@@ -17,12 +17,22 @@ export default new Vuex.Store({
         },
         CHANGE_SENSOR_INFO: (state,payload) => {
             for(var i=0; i<state.AllSensors.length; i++) {
-                if(state.AllSensors[i].sensor_id == payload.id) {
+                if(state.AllSensors[i].SerialID == payload.id) {
                     state.AllSensors[i] = payload.new;
-                    //console.log(payload.new);
                 }
               }
             
+        },
+        CHANGE_SENSOR_RESOURCES: (state, payload) => {
+          for(var i=0; i<state.AllSensors.length; i++) {
+            if(state.AllSensors[i].SerialID == payload.sensorid) {
+              for(var j=0; j<state.AllSensors[i].Resources.length; j++) {
+                if(state.AllSensors[i].Resources[j].ResourceID == payload.new.rid) {
+                  state.AllSensors[i].Resources[j] = payload.new;
+                }
+              }
+            }
+          }
         },
         SPECIAL_DELETE: (state, index) => {
             state.AllSensors.splice(index, 1);
@@ -31,7 +41,7 @@ export default new Vuex.Store({
 
           //  state.AllSensors.shift();
             for(var i=0; i<state.AllSensors.length; i++) {
-                if(state.AllSensors[i].sensor_id == id) {
+                if(state.AllSensors[i].SerialID == id) {
                   state.AllSensors.splice(i, 1);
                 }
               }

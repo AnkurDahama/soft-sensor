@@ -5,14 +5,16 @@
         <b> All Active Sensors </b>
         <br/>
         <div id="sensor-grid">
-            <div class="sensor-small" v-for="(sensor) in this.$store.state.AllSensors" :key="sensor.sensor_id" :id="sensor.sensor_id">
-               <b> {{sensor.sensor_id}} </b> - {{sensor.sensor_name}}:
-               <small> {{sensor.sensor_topic}}</small> <br/> <br/>
-               <a href="#" v-on:click="SendSignal(sensor.sensor_id)"> Send Signal </a> 
+            <div class="sensor-small" v-for="(sensor) in this.$store.state.AllSensors" :key="sensor.SerialID" :id="sensor.SerialID">
+               <b> {{sensor.ObjectID}} </b> -  {{sensor.ObjectName}} 
+                <br/> <br/>
+               <a href="#" v-on:click="SendSignal(sensor.SerialID)"> Send Signal </a> 
                <br/><br/>
-               <a href="#" v-on:click="DeleteSensor(sensor.sensor_id)"> Delete </a>
+               <a href="#" v-on:click="DeleteSensor(sensor.SerialID)"> Delete </a>
                <br/><br/>
                <b><a href="#" v-on:click="OpenSettings(sensor)"> Settings </a></b>
+               <br/><br/>
+               <a href="#" v-on:click="OpenDataGenerator(sensor)"> Data Generator </a>
             </div>
         </div>
 
@@ -23,10 +25,17 @@
             <div class="sensorSetting popup" > 
             <a class="popupClose" href="#" v-on:click="isAddNewOpen=false"> close </a>
             <div class="input-form">
-            <div class="form-label"> Sensor ID</div> <input class="form-field" type="text" v-model="NewSensor.sensor_id" />
-            <div class="form-label"> Sensor Name</div> <input class="form-field" type="text" v-model="NewSensor.sensor_name" />
-            <div class="form-label"> Sensor Topic</div> <input class="form-field" type="text" v-model="NewSensor.sensor_topic" />
-            <div class="form-label"> Sensor Data</div> <input class="form-field" type="text" v-model="NewSensor.sensor_data" />
+            <div class="form-label"> Object ID</div> <select class="form-field" v-model="NewSensor.ObjectID" >
+                                                        <option value="3303"> IPSO Temperature Sensor :3303 </option>
+                                                        <option value="3313"> IPSO Accelerometer :3313 </option>
+                                                        <option value="3302"> IPSO Presence Sensor :3302 </option>
+                                                        <option value="3314"> IPSO Magnetometer :3314 </option>
+                                                        <option value="3315"> IPSO Barometer :3315 </option>
+                                                     </select>
+            <div class="form-label"> Multiple Instances?</div> <select class="form-field" v-model="NewSensor.MultipleInstance" > 
+                                                                    <option value="true"> Yes </option>
+                                                                    <option value="false"> No </option>
+                                                                </select>
 
             <div class="form-submit" v-on:click="AddNewSensor"> Add </div>
             </div>
@@ -39,14 +48,61 @@
        <div class="popupbg" v-if="isSettingOpen">
             <div class="sensorSetting popup" > 
                 <a class="popupClose" href="#" v-on:click="CloseSettings"> close </a>
-                <h1> {{CurrentSettingSensor.sensor_name}}</h1>
+                <h1> {{CurrentSettingSensor.ObjectName}}: {{CurrentSettingSensor.ObjectID}}</h1>
                 <hr/>
-                <b> {{CurrentSettingSensor.sensor_id}} </b> <br/> Topic : {{CurrentSettingSensor.sensor_topic}} 
+                <b> {{CurrentSettingSensor.SerialID}} </b> <br/> Topic : {{CurrentSettingSensor.ObjectTopic}} 
                 <hr/>
-                <h3> Emitting Data </h3>
-                <textarea class="form-field" v-model="CurrentSettingSensor.sensor_data">  </textarea>
+                <h3>  Resources  </h3>
+                <!-- <textarea class="form-field" v-model="CurrentSettingSensor.sensor_data">  </textarea> -->
+                <small><a href="#" v-on:click="GetGeneratedData"> Generate Data </a></small>
+                <div v-for="(resource) in CurrentSettingSensor.Resources" :key="resource.ResourceID">
+                    <b>{{resource.ResourceID}} : {{resource.ResourceName}}</b> {{resource.ResourceValue}} <small> ({{resource.ResourceType}})</small>
+                </div>
+                <hr/>
+
                 
+
+            </div>
+       </div>
+
+       <div class="popupbg" v-if="isDataGeneratorOpen">
+            <div class="sensorSetting popup" > 
+                <a class="popupClose" href="#" v-on:click="CloseDataGenerator"> close </a>
+                <h1> {{CurrentDataGeneratorSensor.ObjectName}}: {{CurrentDataGeneratorSensor.ObjectID}}</h1>
                 <hr/>
+                <!-- <small><a href="#" v-on:click="GetGeneratedData"> Generate Data </a></small> -->
+                 <b> Select Resource</b> 
+                 <br/>
+                    <select class="form-field" v-model="CurrentResource" @change="DataGenResourceChanged($event)">
+                        <option value="-1"> -- Select Resource -- </option>
+                        <option v-for="(resource) in CurrentDataGeneratorSensor.Resources" :key="resource.ResourceID" :value="resource.ResourceID"> {{resource.ResourceName}} </option>
+                    </select>
+                <br/>
+                    <select class="form-field" v-model="GeneratorType" >
+                        <!-- @change="DataGenResourceChanged($event)" -->
+                        <option value="-1"> -- Select Generator Type -- </option>
+                        <option value="0"> Random Value Generator </option>
+                        <option value="1"> Equation Based Generator </option>
+                        <option value="2"> Probability Density Based Generator </option>
+                    </select>
+                <hr/>
+                <b> Resource Name </b> : {{CurrentResourceObj.ResourceName}} <br/>
+                <b> Resource Type </b> : {{CurrentResourceObj.ResourceType}} <br/>
+                <b> Resource Value </b> : {{CurrentResourceObj.ResourceValue}} <br/>
+
+            <hr/>
+
+            <!-- Form for Min Max -->
+
+            <div v-if="GeneratorType!=-1" class="input-form">
+            <div class="form-label">Range Min:</div> <div><input v-model="GeneratorRange.min" class="form-field" type="text" /></div> 
+            <div class="form-label">Range Max:</div> <div><input v-model="GeneratorRange.max" class="form-field" type="text" /></div> 
+
+        </div>
+        
+            
+
+
             </div>
        </div>
 
@@ -56,32 +112,41 @@
 </template>
 
 <script>
+
+import SmartObject from "../models.js"
+import DataGenerator from "../generator.js" 
 export default {
     name: 'SensorList',
     data() {
         return {
             NewSensor: {
-                sensor_id: "",
-                sensor_name: "",
-                sensor_data: "",
-                sensor_topic: "",
+                ObjectID: "3303",
+                MultipleInstance: false,
             },
-            NewId: "",
+            NewId: 0,
             isSettingOpen: false,
             isAddNewOpen: false,
-            CurrentSettingSensor: ""
+            isDataGeneratorOpen: false,
+            CurrentSettingSensor: "",
+            CurrentDataGeneratorSensor: "",
+            CurrentResource:"-1",
+            CurrentResourceObj : "",
+            GeneratorType: "-1",
+            GeneratorRange: {"min":-1, "max":-1},
+            Generator: new DataGenerator(1)
         }
     },
     mounted() {
-        //this.$store.commit('SPECIAL_DELETE', 1);
+
+       // this.$store.commit('SPECIAL_DELETE', 0);
         var curr_Length= this.$store.state.AllSensors.length;
-        this.NewId = this.$store.state.AllSensors[curr_Length-1].sensor_id + 1;
-        this.NewSensor.sensor_id = this.NewId;
+        this.NewId = this.$store.state.AllSensors[curr_Length-1].SerialID + 1;
+        this.NewSensor.SerialID = this.NewId;
 
         this.$root.$on('signal_sent', (id) => {
             // Turn the background back to normal
             document.getElementById(id).classList.remove("sensorHot");
-        })
+        });
     },
     methods: {
         SendSignal: function(id) {
@@ -89,10 +154,10 @@ export default {
             this.$root.$emit('send_signal', id);
         },
         AddNewSensor: function() {
-            this.$store.commit('PUSH_NEW_SENSOR', {sensor_id: this.NewSensor.sensor_id, sensor_name: this.NewSensor.sensor_name, sensor_topic:this.NewSensor.sensor_topic, sensor_data: this.NewSensor.sensor_data});
-            this.NewSensor.sensor_id = ++this.NewId;
-            this.NewSensor.sensor_name = "";
-            this.NewSensor.sensor_data = "";
+            var NewSmartObj = new SmartObject(this.NewId ,this.NewSensor.ObjectID, this.NewSensor.MultipleInstance);
+            this.$store.commit('PUSH_NEW_SENSOR', NewSmartObj);
+            this.NewId++;
+            this.NewSensor.ObjectID = "";
             this.isAddNewOpen = false;
 
         },
@@ -103,13 +168,55 @@ export default {
         OpenSettings: function(sensor) {
             this.CurrentSettingSensor = sensor;
             this.isSettingOpen = true;
-
+            
+        },
+        OpenDataGenerator: function(sensor) {
+            this.CurrentDataGeneratorSensor = sensor;
+            this.isDataGeneratorOpen = true;
         },
         CloseSettings: function(sensor) {
-            this.$store.commit('CHANGE_SENSOR_INFO', {id: this.CurrentSettingSensor.sensor_id, new: this.CurrentSettingSensor});
-           // console.log(this.CurrentSettingSensor);
+            this.$store.commit('CHANGE_SENSOR_INFO', {id: this.CurrentSettingSensor.SerialID, new: this.CurrentSettingSensor});
             this.isSettingOpen = false;
             this.CurrentSettingSensor = "";
+        },
+
+
+        CloseDataGenerator: function(sensor) {
+            if(this.CurrentResource !== "-1" && this.GeneratorType !== "-1") {
+            // update sensor
+            this.$store.commit('CHANGE_SENSOR_INFO', {id: this.CurrentDataGeneratorSensor.SerialID, new: this.CurrentDataGeneratorSensor});
+            
+            //update resources 
+            this.CurrentResourceObj.GeneratorType = this.GeneratorType;
+            this.CurrentResourceObj.Range = this.GeneratorRange;
+            this.$store.commit('CHANGE_SENSOR_RESOURCES', {sensorid: this.CurrentDataGeneratorSensor.SerialID, rid: this.CurrentResourceObj.ResourceID, new: this.CurrentResourceObj});
+            }
+            // reset variables
+            this.isDataGeneratorOpen = false;
+            this.CurrentDataGeneratorSensor = "";
+            this.CurrentResource = "-1";
+            this.CurrentResourceObj = "";
+            this.GeneratorType = "-1";
+            this.GeneratorRange = {"min":-1, "max":-1};
+
+        },
+
+
+        DataGenResourceChanged: function(event) {
+
+            if(this.CurrentResource !== "-1" && this.GeneratorType !== "-1") {
+            //update resources 
+            this.CurrentResourceObj.GeneratorType = this.GeneratorType;
+            this.CurrentResourceObj.Range = this.GeneratorRange;
+            this.$store.commit('CHANGE_SENSOR_RESOURCES', {sensorid: this.CurrentDataGeneratorSensor.SerialID, rid: this.CurrentResourceObj.ResourceID, new: this.CurrentResourceObj});
+            }
+
+            this.CurrentResourceObj = this.CurrentDataGeneratorSensor.Resources.find(res => res.ResourceID == event.target.value);
+            this.GeneratorType = this.CurrentResourceObj.GeneratorType;
+            this.GeneratorRange = this.CurrentResourceObj.Range;
+        },
+        GetGeneratedData: function() {
+            this.Generator.GenerateForSensor(this.CurrentSettingSensor);
         }
     }
 }

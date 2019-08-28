@@ -5,6 +5,10 @@ import store from './store'
 
 Vue.use(Paho);
 
+
+
+
+
 Vue.prototype.$client = {obj: "a"};
 Vue.prototype.$CreateClient = function(ser, port, clientId) {
   this.$client.obj = new Paho.Client(ser, port, clientId);

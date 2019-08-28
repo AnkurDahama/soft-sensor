@@ -5,12 +5,6 @@
       <connection />
     </div>
 
-    <!-- <div v-if="isConnected" id="main-grid">
-      <div class="main-grid-cols"> <h3>Topics</h3> <topics /> </div>
-      <div class="main-grid-cols"> <h3>Send Messages</h3> <post-message/> </div>
-      <div class="main-grid-cols"> <h3>Incoming Messages</h3> <incoming-msg/> </div>
-    </div> -->
-
     <div v-if="isConnected">
       <sensor-list />
     </div>
@@ -19,6 +13,8 @@
 </template>
 
 <script>
+
+
 import Paho from 'paho-mqtt'
 import HelloWorld from './components/HelloWorld.vue'
 import Connection from './components/Connection.vue'
@@ -27,6 +23,9 @@ import Topics from './components/Topics.vue'
 import IncomingMsg from './components/IncomingMsg.vue'
 
 import SensorList from './components/SensorList.vue'
+import DataGenerator from './generator.js'
+
+
 export default {
   name: 'app',
   components: {
@@ -39,7 +38,8 @@ export default {
   },
   data() {
     return {
-      isConnected: false
+      isConnected: false,
+      Generator: new DataGenerator(1)
     }
   },
   mounted() {
@@ -52,7 +52,8 @@ export default {
         this.$root.$on('send_signal', (id)=> {
           // Find index by ID
           var sensor = this.FindSensorBySensorID(id);
-          this.SendMessage(sensor.sensor_data, sensor.sensor_topic);
+          this.Generator.GenerateForSensor(sensor);
+          this.SendMessage(JSON.stringify(sensor), sensor.ObjectTopic);
           setTimeout(function() {this.$root.$emit('signal_sent', id)}.bind(this),200);
           //this.$root.$emit('signal_sent');
           
@@ -61,7 +62,7 @@ export default {
     methods: {
       FindSensorBySensorID: function(id) {
         for(var i=0; i<this.$store.state.AllSensors.length; i++) {
-          if(this.$store.state.AllSensors[i].sensor_id == id) {
+          if(this.$store.state.AllSensors[i].SerialID == id) {
             return this.$store.state.AllSensors[i];
           }
         }
