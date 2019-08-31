@@ -92,8 +92,8 @@ export default {
             PlatformChoice: "cloudmqtt",
             AWSendpoint: "a3h2nrfgdvo8qp-ats.iot.eu-north-1.amazonaws.com",
             AWSregion: "eu-north-1",
-            AWSaccessKeyID: "AKIAIUQNEYXOVKVMQYIA",
-            AWSaccessKeySec: "SVhLC53RGTI0CnzO2unmQ4REYVGZeg9pg7tw4YJq"
+            AWSaccessKeyID: "",
+            AWSaccessKeySec: ""
         }
     },
     methods: {
