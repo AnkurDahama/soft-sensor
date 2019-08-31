@@ -3,7 +3,6 @@ export default class DataGenerator {
 
     GenerateDataValue(data_type, min, max, tofixed=2) {
         if(data_type=="Float") {
-            console.log("inhere");
             var highlightedNumber = Math.random() * (max - min) + min;
             highlightedNumber = highlightedNumber.toFixed(tofixed);
             return highlightedNumber;

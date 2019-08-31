@@ -42,6 +42,7 @@ export default {
       Generator: new DataGenerator(1)
     }
   },
+
   mounted() {
         this.$root.$on('connected', ()=> {
             this.isConnected = true;
@@ -146,7 +147,7 @@ a:visited {
   border: solid black 2px;
   box-shadow: 5px 10px;
   width: 500px;
-  padding: 60px 60px 60px 60px;
+  padding: 30px 60px 30px 60px;
   
   /* margin-top: 50px; */
 }

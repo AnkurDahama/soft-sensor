@@ -8,7 +8,9 @@
             <div class="sensor-small" v-for="(sensor) in this.$store.state.AllSensors" :key="sensor.SerialID" :id="sensor.SerialID">
                <b> {{sensor.ObjectID}} </b> -  {{sensor.ObjectName}} 
                 <br/> <br/>
-               <a href="#" v-on:click="SendSignal(sensor.SerialID)"> Send Signal </a> 
+               <a v-if="sensor.EmitFreq==-1" href="#" v-on:click="SendSignal(sensor.SerialID)"> Send Signal </a> 
+               <a v-if="sensor.EmitFreq!=-1&&intervals.find(intv=>intv.sensorid == sensor.SerialID)&&intervals.find(intv=>intv.sensorid == sensor.SerialID).isactive==true" href="#" v-on:click="StopInt(sensor)"> Pause Emitting </a>
+               <a v-if="sensor.EmitFreq!=-1&&intervals.find(intv=>intv.sensorid == sensor.SerialID)&&intervals.find(intv=>intv.sensorid == sensor.SerialID).isactive==false" href="#" v-on:click="ChangeIntTime(sensor)"> Resume Emitting </a> 
                <br/><br/>
                <a href="#" v-on:click="DeleteSensor(sensor.SerialID)"> Delete </a>
                <br/><br/>
@@ -60,6 +62,9 @@
                 </div>
                 <hr/>
 
+                 <div class="input-form">
+                    <div class="form-label">Time Period(seconds):</div> <div><input v-model="CurrentSettingSensor.EmitFreq" class="form-field" type="text" /></div> 
+                </div>
                 
 
             </div>
@@ -115,6 +120,7 @@
 
 import SmartObject from "../models.js"
 import DataGenerator from "../generator.js" 
+import { setInterval } from 'timers';
 export default {
     name: 'SensorList',
     data() {
@@ -133,7 +139,8 @@ export default {
             CurrentResourceObj : "",
             GeneratorType: "-1",
             GeneratorRange: {"min":-1, "max":-1},
-            Generator: new DataGenerator(1)
+            Generator: new DataGenerator(1),
+            intervals: [],
         }
     },
     mounted() {
@@ -147,8 +154,37 @@ export default {
             // Turn the background back to normal
             document.getElementById(id).classList.remove("sensorHot");
         });
+
+        // Signal Emitter
+        for(var i=0; i<this.$store.state.AllSensors.length; i++) {
+            this.StartInt(this.$store.state.AllSensors[i]);
+        }
+        // this.interval = setInterval(() => this.SendSignal(this.$store.state.AllSensors[0].SerialID), 1000);
+        // this.interval = setInterval(() => this.SendSignal(this.$store.state.AllSensors[1].SerialID), 2000);
     },
     methods: {
+        StartInt: function(sensor) {
+            if(sensor.EmitFreq > 0) {
+                this.intervals.push({sensorid:sensor.SerialID, interval:setInterval(() => this.SendSignal(sensor.SerialID), sensor.EmitFreq*1000), isactive:true });
+            }
+        },
+        StopInt: function(sensor) {
+            var ThisInt = this.intervals.find(intv=> intv.sensorid == sensor.SerialID);
+            clearInterval(ThisInt.interval._id);
+            ThisInt.isactive = false;
+            // ThisInt.sensorid = -1;
+        },
+        ChangeIntTime: function(sensor) {
+            var ThisInt = this.intervals.find(intv=> intv.sensorid == sensor.SerialID);
+            if(ThisInt==undefined) {
+                this.StartInt(sensor);
+            } else {
+                clearInterval(ThisInt.interval._id);
+            ThisInt.sensorid = -1;
+            this.StartInt(sensor);
+            }
+            
+        },
         SendSignal: function(id) {
             document.getElementById(id).classList.add("sensorHot")
             this.$root.$emit('send_signal', id);
@@ -168,7 +204,6 @@ export default {
         OpenSettings: function(sensor) {
             this.CurrentSettingSensor = sensor;
             this.isSettingOpen = true;
-            
         },
         OpenDataGenerator: function(sensor) {
             this.CurrentDataGeneratorSensor = sensor;
@@ -177,6 +212,12 @@ export default {
         CloseSettings: function(sensor) {
             this.$store.commit('CHANGE_SENSOR_INFO', {id: this.CurrentSettingSensor.SerialID, new: this.CurrentSettingSensor});
             this.isSettingOpen = false;
+            if(this.CurrentSettingSensor.EmitFreq != -1) {
+                this.ChangeIntTime(this.CurrentSettingSensor);
+            } else {
+                this.StopInt(this.CurrentSettingSensor);
+            }
+            
             this.CurrentSettingSensor = "";
         },
 

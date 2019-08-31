@@ -14,6 +14,10 @@ Vue.prototype.$CreateClient = function(ser, port, clientId) {
   this.$client.obj = new Paho.Client(ser, port, clientId);
 };
 
+Vue.prototype.$CreateClientAWS = function(ser, clientId) {
+  this.$client.obj = new Paho.Client(ser, clientId);
+};
+
 // Vue.prototype.$Messages = {msg: [{id:0, message:"dafs"}]};
 
 Vue.prototype.$SubTopics = {list: []};

@@ -24,6 +24,7 @@ export default class SmartObject {
     ObjectTopic;
     SerialID;
     Resources;
+    EmitFreq;
     GetResourceObjectByID(id) {
         for (res in this.Resources) {
             if(res.ResourceID == id) {
@@ -41,6 +42,8 @@ export default class SmartObject {
         this.ObjectTopic = "thesis/test";
         this.ObjectName = AssignObjectValuesByID(id);
         this.Resources = ResourceByID(id);
+        this.EmitFreq = -1;
+
     }
 
   }
