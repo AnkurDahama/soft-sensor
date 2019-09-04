@@ -6,17 +6,20 @@
         <br/>
         <div id="sensor-grid">
             <div class="sensor-small" v-for="(sensor) in this.$store.state.AllSensors" :key="sensor.SerialID" :id="sensor.SerialID">
-               <b> {{sensor.ObjectID}} </b> -  {{sensor.ObjectName}} 
+               <b> {{sensor.ObjectID}}  -  {{sensor.ObjectName}} </b>
                 <br/> <br/>
+                <div id="sensor-options">
                <a v-if="sensor.EmitFreq==-1" href="#" v-on:click="SendSignal(sensor.SerialID)"> Send Signal </a> 
                <a v-if="sensor.EmitFreq!=-1&&intervals.find(intv=>intv.sensorid == sensor.SerialID)&&intervals.find(intv=>intv.sensorid == sensor.SerialID).isactive==true" href="#" v-on:click="StopInt(sensor)"> Pause Emitting </a>
                <a v-if="sensor.EmitFreq!=-1&&intervals.find(intv=>intv.sensorid == sensor.SerialID)&&intervals.find(intv=>intv.sensorid == sensor.SerialID).isactive==false" href="#" v-on:click="ChangeIntTime(sensor)"> Resume Emitting </a> 
+               
                <br/><br/>
-               <a href="#" v-on:click="DeleteSensor(sensor.SerialID)"> Delete </a>
-               <br/><br/>
-               <b><a href="#" v-on:click="OpenSettings(sensor)"> Settings </a></b>
+               <a href="#" v-on:click="OpenSettings(sensor)"> Settings </a>
                <br/><br/>
                <a href="#" v-on:click="OpenDataGenerator(sensor)"> Data Generator </a>
+               <br/><br/>
+               <a href="#" v-on:click="DeleteSensor(sensor.SerialID)"> Delete </a>
+                </div>
             </div>
         </div>
 
@@ -170,9 +173,12 @@ export default {
         },
         StopInt: function(sensor) {
             var ThisInt = this.intervals.find(intv=> intv.sensorid == sensor.SerialID);
-            clearInterval(ThisInt.interval._id);
-            ThisInt.isactive = false;
+            if(ThisInt) {
+                clearInterval(ThisInt.interval._id);
+                ThisInt.isactive = false;
             // ThisInt.sensorid = -1;
+            }
+            
         },
         ChangeIntTime: function(sensor) {
             var ThisInt = this.intervals.find(intv=> intv.sensorid == sensor.SerialID);
@@ -278,6 +284,10 @@ export default {
 
 .sensorHot {
     background-color: green;
+}
+
+#sensor-options {
+    font-size: 0.9em;
 }
 </style>
 
