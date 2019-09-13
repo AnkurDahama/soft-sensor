@@ -1,6 +1,9 @@
 <template>
   <div id="app">
-    <HelloWorld msg="Welcome to Soft-Sensor Prototype"/>
+    <div class="hello">
+    <h1>Welcome to Soft-Sensor Prototype</h1>
+  </div>
+    
     <div v-if="!isConnected" class="popup">
       <connection />
     </div>
@@ -14,21 +17,13 @@
 
 <script>
 import Paho from 'paho-mqtt'
-import HelloWorld from './components/HelloWorld.vue'
 import Connection from './components/Connection.vue'
-import PostMessage from './components/PostMessage.vue'
-import Topics from './components/Topics.vue'
-import IncomingMsg from './components/IncomingMsg.vue'
 import SensorList from './components/SensorList.vue'
 import DataGenerator from './generator.js'
 export default {
   name: 'app',
   components: {
-    HelloWorld,
     Connection,
-    PostMessage,
-    Topics,
-    IncomingMsg,
     SensorList
   },
   data() {
@@ -48,7 +43,7 @@ export default {
           // Find index by ID
           var sensor = this.FindSensorBySensorID(id);
           this.Generator.GenerateForSensor(sensor);
-          this.SendMessage(JSON.stringify(sensor), sensor.ObjectTopic);
+          this.SendMessage(JSON.stringify(sensor.SmartObj), sensor.ObjectTopic);
           setTimeout(function() {this.$root.$emit('signal_sent', id)}.bind(this),200);
           //this.$root.$emit('signal_sent');          
         })
@@ -113,6 +108,9 @@ a:visited {
   margin: 0 auto;
   margin-top: 50px;
 } */
+.hello {
+  text-align: center;
+}
 .popupbg {
   width: 100%;
   height: 100%;

@@ -40,8 +40,8 @@ export default class DataGenerator {
     }
 
     GenerateForSensor(sensor) {
-        for(var i=0; i<sensor.Resources.length; i++) {
-            var res = sensor.Resources[i];
+        for(var i=0; i<sensor.SmartObj.Resources.length; i++) {
+            var res = sensor.SmartObj.Resources[i];
             if(res.GeneratorType!=3) {
                 if(res.ResourceType=='String') {
                     res.ResourceValue = this.GenerateDataValueString(res.EnumOptions);
