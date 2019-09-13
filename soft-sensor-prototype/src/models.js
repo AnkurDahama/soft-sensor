@@ -5,13 +5,15 @@ class SmartResources {
     ResourceValue;
     GeneratorType;
     Range;
+    EnumOptions;
     constructor(name, id, type, defaultVal) {
        this.ResourceName = name;
        this.ResourceID = id;
        this.ResourceType = type;
        this.ResourceValue = defaultVal;
        this.GeneratorType = 0;
-       this.Range = {"min":0, "max":100}
+       this.Range = {"min":0, "max":100};
+       this.EnumOptions = [];
    }
 }
 
@@ -33,11 +35,11 @@ export default class SmartObject {
         }
     }
 
-    constructor(sid, id, multi_ins) {
-        const axios = require('axios');
+    constructor(sid, id, multi_ins, response) {
+     //   const axios = require('axios');
         var str = "";
-        var uri = "https://raw.githubusercontent.com/OpenMobileAlliance/lwm2m-registry/test/" + id + ".xml";
-        axios.get(uri).then((response) => {
+     //   var uri = "https://raw.githubusercontent.com/OpenMobileAlliance/lwm2m-registry/test/" + id + ".xml";
+    //    axios.get(uri).then((response) => {
             str = response.data;
             var parseString = require('xml2js').parseString;
             var name = "";
@@ -50,7 +52,9 @@ export default class SmartObject {
                 urn = result.LWM2M.Object[0].ObjectURN[0];
                 for(var i=0; i<result.LWM2M.Object[0].Resources[0].Item.length; i++) {
                     var res = result.LWM2M.Object[0].Resources[0].Item[i];
-                    all_res.push(new SmartResources(res.Name[0], res.$.ID, res.Type[0], 0));
+                    if(res.Type[0]!=''){
+                        all_res.push(new SmartResources(res.Name[0], res.$.ID, res.Type[0], 0));
+                    }
                 }
                 
             });
@@ -62,8 +66,8 @@ export default class SmartObject {
             this.ObjectID = id;
             this.MultipleInstance = multi_ins;
             this.ObjectTopic = "thesis/test";
-            this.EmitFreq = -1;
-          })
+            this.EmitFreq = 0;
+       //   })
 
 
 

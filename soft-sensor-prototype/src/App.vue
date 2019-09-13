@@ -13,19 +13,14 @@
 </template>
 
 <script>
-
-
 import Paho from 'paho-mqtt'
 import HelloWorld from './components/HelloWorld.vue'
 import Connection from './components/Connection.vue'
 import PostMessage from './components/PostMessage.vue'
 import Topics from './components/Topics.vue'
 import IncomingMsg from './components/IncomingMsg.vue'
-
 import SensorList from './components/SensorList.vue'
 import DataGenerator from './generator.js'
-
-
 export default {
   name: 'app',
   components: {
@@ -42,7 +37,6 @@ export default {
       Generator: new DataGenerator(1)
     }
   },
-
   mounted() {
         this.$root.$on('connected', ()=> {
             this.isConnected = true;
@@ -56,8 +50,7 @@ export default {
           this.Generator.GenerateForSensor(sensor);
           this.SendMessage(JSON.stringify(sensor), sensor.ObjectTopic);
           setTimeout(function() {this.$root.$emit('signal_sent', id)}.bind(this),200);
-          //this.$root.$emit('signal_sent');
-          
+          //this.$root.$emit('signal_sent');          
         })
     },
     methods: {
@@ -93,32 +86,25 @@ a:visited {
   color: #2c3e50;
   margin-top: 60px;
 }
-
 #main-grid {
   display: grid;
   grid-template-columns: 33% 33% 33%;
   /* margin: 0 auto; */
 }
-
 .main-grid-cols {
   border: solid black 2px;
 }
-
 .root-page-div {
   text-align: left;
   margin-left: 40px;
 }
-
 .root-div {
   text-align: left;
   /* margin-left: 40px; */
 }
-
 .root-heading {
   text-align: center;
 }
-
-
 /* .popup {
   border: solid black 2px;
   box-shadow: 5px 10px;
@@ -127,7 +113,6 @@ a:visited {
   margin: 0 auto;
   margin-top: 50px;
 } */
-
 .popupbg {
   width: 100%;
   height: 100%;
@@ -151,32 +136,27 @@ a:visited {
   
   /* margin-top: 50px; */
 }
-
 .popupClose {
   position: absolute;
   right: 15px;
   top: 10px;
   font-weight: bold;
 }
-
 .input-form {
   display: grid;
   grid-template-columns: 30% 70%;
   row-gap: 10px;
   column-gap: 40px;
 }
-
 .form-field {
   font-size: 1.1em;
   width: 70%;
   height: 40px;
 }
-
 .form-label {
   margin-top: 10px;
   text-align: right;
 }
-
 .form-submit {
   border: 2px solid #2c3e50;
   padding: 10px 50px;
@@ -185,11 +165,9 @@ a:visited {
   margin: 0 auto;
   margin-top: 20px;
 }
-
 .form-submit:active {
   background-color: #2c3e50;
 }
-
 .form-submit:hover {
   cursor: pointer;
 }

@@ -9,9 +9,9 @@
                <b> {{sensor.ObjectID}}  -  {{sensor.ObjectName}} </b>
                 <br/> <br/>
                 <div id="sensor-options">
-               <a v-if="sensor.EmitFreq==-1" href="#" v-on:click="SendSignal(sensor.SerialID)"> Send Signal </a> 
-               <a v-if="sensor.EmitFreq!=-1&&intervals.find(intv=>intv.sensorid == sensor.SerialID)&&intervals.find(intv=>intv.sensorid == sensor.SerialID).isactive==true" href="#" v-on:click="StopInt(sensor)"> Pause Emitting </a>
-               <a v-if="sensor.EmitFreq!=-1&&intervals.find(intv=>intv.sensorid == sensor.SerialID)&&intervals.find(intv=>intv.sensorid == sensor.SerialID).isactive==false" href="#" v-on:click="ChangeIntTime(sensor)"> Resume Emitting </a> 
+               <a v-if="sensor.EmitFreq==0" href="#" v-on:click="SendSignal(sensor.SerialID)"> Send Signal </a> 
+               <a v-if="sensor.EmitFreq!=0&&intervals.find(intv=>intv.sensorid == sensor.SerialID)&&intervals.find(intv=>intv.sensorid == sensor.SerialID).isactive==true" href="#" v-on:click="StopInt(sensor)"> Pause Emitting </a>
+               <a v-if="sensor.EmitFreq!=0&&intervals.find(intv=>intv.sensorid == sensor.SerialID)&&intervals.find(intv=>intv.sensorid == sensor.SerialID).isactive==false" href="#" v-on:click="ChangeIntTime(sensor)"> Resume Emitting </a> 
                
                <br/><br/>
                <a href="#" v-on:click="OpenSettings(sensor)"> Settings </a>
@@ -59,7 +59,7 @@
                 <hr/>
                 <h3>  Resources  </h3>
                 <!-- <textarea class="form-field" v-model="CurrentSettingSensor.sensor_data">  </textarea> -->
-                <small><a href="#" v-on:click="GetGeneratedData"> Generate Data </a></small>
+                <!-- <small><a href="#" v-on:click="GetGeneratedData"> Generate Data </a></small> -->
                 <div v-for="(resource) in CurrentSettingSensor.Resources" :key="resource.ResourceID">
                     <b>{{resource.ResourceID}} : {{resource.ResourceName}}</b> {{resource.ResourceValue}} <small> ({{resource.ResourceType}})</small>
                 </div>
@@ -90,6 +90,7 @@
                         <!-- @change="DataGenResourceChanged($event)" -->
                         <option value="-1"> -- Select Generator Type -- </option>
                         <option value="0"> Random Value Generator </option>
+                        <option value="3">Fixed Value </option>
                         <option value="1"> Equation Based Generator </option>
                         <option value="2"> Probability Density Based Generator </option>
                     </select>
@@ -98,15 +99,28 @@
                 <b> Resource Type </b> : {{CurrentResourceObj.ResourceType}} <br/>
                 <b> Resource Value </b> : {{CurrentResourceObj.ResourceValue}} <br/>
 
+              
             <hr/>
 
             <!-- Form for Min Max -->
 
-            <div v-if="GeneratorType!=-1" class="input-form">
-            <div class="form-label">Range Min:</div> <div><input v-model="GeneratorRange.min" class="form-field" type="text" /></div> 
-            <div class="form-label">Range Max:</div> <div><input v-model="GeneratorRange.max" class="form-field" type="text" /></div> 
+            <div v-if="GeneratorType!=-1&&CurrentResourceObj.ResourceType=='Float'&&GeneratorType!=3" class="input-form">
+                <div class="form-label">Range Min:</div> <div><input v-model="GeneratorRange.min" class="form-field" type="text" /></div> 
+                <div class="form-label">Range Max:</div> <div><input v-model="GeneratorRange.max" class="form-field" type="text" /></div> 
+            </div>
 
-        </div>
+
+            <div v-if="GeneratorType==3" class="input-form">
+                <div class="form-label">Fixed Value:</div> <div><input v-model="GeneratorRange.min" class="form-field" type="text" /></div> 
+            </div>
+
+            <div v-if="GeneratorType!=-1&&CurrentResourceObj.ResourceType=='String'&&GeneratorType!=3" class="input-form">
+                <div class="form-label">Add option:</div> <div><input v-model="NewEnumOption" class="form-field" type="text" /></div>
+                 <div class="form-submit" v-on:click="AddNewEnum"> Add </div>
+                  <div v-for="(options, index) in GeneratorEnum" :key="index">
+                    <b>{{options}}</b>
+                </div> 
+            </div>
         
             
 
@@ -142,21 +156,26 @@ export default {
             CurrentResourceObj : "",
             GeneratorType: "-1",
             GeneratorRange: {"min":-1, "max":-1},
+            GeneratorEnum: [],
+            NewEnumOption: '',
             Generator: new DataGenerator(1),
             intervals: [],
         }
     },
     mounted() {
-
-       // this.$store.commit('SPECIAL_DELETE', 0);
-        var curr_Length= this.$store.state.AllSensors.length;
-        this.NewId = this.$store.state.AllSensors[curr_Length-1].SerialID + 1;
-        this.NewSensor.SerialID = this.NewId;
-
-        this.$root.$on('signal_sent', (id) => {
+         this.$root.$on('signal_sent', (id) => {
             // Turn the background back to normal
             document.getElementById(id).classList.remove("sensorHot");
         });
+       // this.$store.commit('SPECIAL_DELETE', 0);
+       if(this.$store.state.AllSensors.length!=0) {
+           var curr_Length= this.$store.state.AllSensors.length;
+            this.NewId = this.$store.state.AllSensors[curr_Length-1].SerialID + 1;
+            this.NewSensor.SerialID = this.NewId;
+       }
+        
+
+       
 
         // Signal Emitter
         for(var i=0; i<this.$store.state.AllSensors.length; i++) {
@@ -192,15 +211,24 @@ export default {
             
         },
         SendSignal: function(id) {
-            document.getElementById(id).classList.add("sensorHot")
+            document.getElementById(id).classList.add("sensorHot");
             this.$root.$emit('send_signal', id);
         },
         AddNewSensor: function() {
-            var NewSmartObj = new SmartObject(this.NewId ,this.NewSensor.ObjectID, this.NewSensor.MultipleInstance);
-            this.$store.commit('PUSH_NEW_SENSOR', NewSmartObj);
+            const axios = require('axios');
+            var uri = "https://raw.githubusercontent.com/OpenMobileAlliance/lwm2m-registry/test/" + this.NewSensor.ObjectID + ".xml";
+            axios.get(uri).then((response) => {
+                var NewSmartObj = new SmartObject(this.NewId ,this.NewSensor.ObjectID, this.NewSensor.MultipleInstance, response);
+                this.$store.commit('PUSH_NEW_SENSOR', NewSmartObj);
             this.NewId++;
             this.NewSensor.ObjectID = "";
             this.isAddNewOpen = false;
+            });
+            //var NewSmartObj = new SmartObject(this.NewId ,this.NewSensor.ObjectID, this.NewSensor.MultipleInstance);
+            // this.$store.commit('PUSH_NEW_SENSOR', NewSmartObj);
+            // this.NewId++;
+            // this.NewSensor.ObjectID = "";
+            // this.isAddNewOpen = false;
 
         },
         DeleteSensor: function(id) {
@@ -218,7 +246,7 @@ export default {
         CloseSettings: function(sensor) {
             this.$store.commit('CHANGE_SENSOR_INFO', {id: this.CurrentSettingSensor.SerialID, new: this.CurrentSettingSensor});
             this.isSettingOpen = false;
-            if(this.CurrentSettingSensor.EmitFreq != -1) {
+            if(this.CurrentSettingSensor.EmitFreq != 0) {
                 this.ChangeIntTime(this.CurrentSettingSensor);
             } else {
                 this.StopInt(this.CurrentSettingSensor);
@@ -236,6 +264,10 @@ export default {
             //update resources 
             this.CurrentResourceObj.GeneratorType = this.GeneratorType;
             this.CurrentResourceObj.Range = this.GeneratorRange;
+            this.CurrentResourceObj.EnumOptions = this.GeneratorEnum;
+            if(this.GeneratorType==3) {
+                this.CurrentResourceObj.ResourceValue = this.GeneratorRange.min;
+            }
             this.$store.commit('CHANGE_SENSOR_RESOURCES', {sensorid: this.CurrentDataGeneratorSensor.SerialID, rid: this.CurrentResourceObj.ResourceID, new: this.CurrentResourceObj});
             }
             // reset variables
@@ -245,7 +277,8 @@ export default {
             this.CurrentResourceObj = "";
             this.GeneratorType = "-1";
             this.GeneratorRange = {"min":-1, "max":-1};
-
+            this.GeneratorEnum = {};
+            this.NewEnumOption = '';
         },
 
 
@@ -255,12 +288,22 @@ export default {
             //update resources 
             this.CurrentResourceObj.GeneratorType = this.GeneratorType;
             this.CurrentResourceObj.Range = this.GeneratorRange;
+            this.CurrentResourceObj.EnumOptions = this.GeneratorEnum;
+            if(this.GeneratorType==3) {
+                this.CurrentResourceObj.ResourceValue = this.GeneratorRange.min;
+            }
             this.$store.commit('CHANGE_SENSOR_RESOURCES', {sensorid: this.CurrentDataGeneratorSensor.SerialID, rid: this.CurrentResourceObj.ResourceID, new: this.CurrentResourceObj});
             }
 
             this.CurrentResourceObj = this.CurrentDataGeneratorSensor.Resources.find(res => res.ResourceID == event.target.value);
             this.GeneratorType = this.CurrentResourceObj.GeneratorType;
             this.GeneratorRange = this.CurrentResourceObj.Range;
+            this.GeneratorEnum = this.CurrentResourceObj.EnumOptions;
+            this.NewEnumOption = '';
+        },
+        AddNewEnum: function() {
+            this.GeneratorEnum.push(this.NewEnumOption);
+            this.NewEnumOption = '';
         },
         GetGeneratedData: function() {
             this.Generator.GenerateForSensor(this.CurrentSettingSensor);

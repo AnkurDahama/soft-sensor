@@ -156,8 +156,6 @@ export default {
             this.$client.obj.connect(options);
         },
         onConnect: function() {
-            console.log("Connected");
-
             this.$root.$emit('connected');
             
             this.isConnected = true;
